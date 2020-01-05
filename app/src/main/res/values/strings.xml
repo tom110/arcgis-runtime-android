@@ -13,4 +13,5 @@
     <string name="menu_tools">Tools</string>
     <string name="menu_share">图层1</string>
     <string name="menu_send">图层2</string>
+    <string name="layersManagerTitle">图层管理</string>
 </resources>

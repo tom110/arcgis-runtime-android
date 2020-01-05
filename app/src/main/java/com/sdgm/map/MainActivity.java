@@ -13,7 +13,6 @@ import androidx.core.view.GravityCompat;
 
 import com.google.android.material.navigation.NavigationView;
 import com.sdgm.map.ui.gallery.GalleryFragment;
-import com.sdgm.map.ui.home.HomeFragment;
 
 import androidx.drawerlayout.widget.DrawerLayout;
 
@@ -30,14 +29,14 @@ import static android.content.ContentValues.TAG;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
-    private MapView mMapView;
-
     private DrawerLayout drawer;
 
     private Fragment mapFragment;
     private Fragment layerManagerFragment;
 
     private String tag;
+
+    private MapView mMapView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,10 +57,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         toggle.syncState();
 
         mapFragment=getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
+
         tag="map";
 
-
-        mMapView = getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment).getView().findViewById(R.id.mapView);
+        mMapView=findViewById(R.id.mapView);
     }
 
     @Override
@@ -75,6 +74,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     protected void onPause() {
+
         if (mMapView != null) {
             mMapView.pause();
         }
@@ -109,13 +109,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     fragment = getSupportFragmentManager().findFragmentByTag("layersManager");
                     if (fragment != null) {
                         getSupportFragmentManager().beginTransaction().hide(fragment).show(mapFragment)
-                                .addToBackStack(null).commitAllowingStateLoss();
+                                .commit();
                     } else {
                         getSupportFragmentManager().beginTransaction().show(mapFragment)
-                                .addToBackStack(null).commitAllowingStateLoss();
+                                .commit();
                     }
 
-                    Log.i(TAG, "home");
+                    Log.i(TAG, "map");
                     tag="map";
                     break;
                 }
@@ -125,13 +125,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 }else {
                     if (layerManagerFragment == null) {
                         layerManagerFragment = new GalleryFragment();
-                        getSupportFragmentManager().beginTransaction().hide(mapFragment).add(R.id.nav_host_fragment,
-                                layerManagerFragment, "layersManager").addToBackStack(null).commitAllowingStateLoss();
+                        getSupportFragmentManager().beginTransaction()
+                                .add(R.id.nav_host_fragment,layerManagerFragment, "layersManager").commit();
                     } else {
                         fragment = getSupportFragmentManager().findFragmentByTag("layersManager");
-                        getSupportFragmentManager().beginTransaction().hide(mapFragment).show(fragment).addToBackStack(null).commitAllowingStateLoss();
+                        getSupportFragmentManager().beginTransaction()
+                                .show(fragment).commit();
                     }
-                    Log.i(TAG, "gallery");
+                    Log.i(TAG, "layersManager");
                     tag="layersManager";
                     break;
                 }
