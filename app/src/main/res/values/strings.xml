@@ -6,6 +6,7 @@
     <string name="nav_header_subtitle">android.studio@android.com</string>
     <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">Settings</string>
+    <string name="location_permission_denied">User denied permission for device location.</string>
 
     <string name="menu_home">地图</string>
     <string name="menu_gallery">图层管理</string>

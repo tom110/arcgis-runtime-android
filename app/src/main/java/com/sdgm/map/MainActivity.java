@@ -2,6 +2,7 @@ package com.sdgm.map;
 
 import android.os.Bundle;
 
+import com.esri.arcgisruntime.mapping.view.LocationDisplay;
 import com.esri.arcgisruntime.mapping.view.MapView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
@@ -13,6 +14,7 @@ import androidx.core.view.GravityCompat;
 
 import com.google.android.material.navigation.NavigationView;
 import com.sdgm.map.ui.gallery.GalleryFragment;
+import com.sdgm.map.ui.home.HomeFragment;
 
 import androidx.drawerlayout.widget.DrawerLayout;
 
@@ -23,6 +25,7 @@ import androidx.fragment.app.Fragment;
 
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import static android.content.ContentValues.TAG;
@@ -37,6 +40,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private String tag;
 
     private MapView mMapView;
+    private LocationDisplay mLocationDisplay;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,9 +48,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(view -> Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show());
+
+
         drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
@@ -56,11 +59,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        mapFragment=getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
+        mapFragment= getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
+
 
         tag="map";
 
-        mMapView=findViewById(R.id.mapView);
     }
 
     @Override
