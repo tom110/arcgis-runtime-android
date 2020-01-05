@@ -71,7 +71,8 @@ public class GalleryFragment extends Fragment {
             }
             List<String> s = new ArrayList<>();
             for(int i =0;i<files.length;i++){
-                s.add(files[i].getName());
+                if(files[i].getName().endsWith(".shp"))
+                    s.add(files[i].getName());
             }
             return s;
         }else{
