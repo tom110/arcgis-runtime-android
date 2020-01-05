@@ -1,6 +1,7 @@
 package com.sdgm.map.ui.gallery;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Environment;
@@ -19,6 +20,7 @@ import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.sdgm.map.R;
 
@@ -26,9 +28,15 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import static android.content.ContentValues.TAG;
+
 public class GalleryFragment extends Fragment {
 
     ListView listView;
+
+    String mapsFolder="maps";
+
+    Intent locateLayerIntent = new Intent("locateLayer");
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -42,7 +50,16 @@ public class GalleryFragment extends Fragment {
         listView= view.findViewById(R.id.listView);
         List<Layer> layers=new ArrayList<>();
 //        getPermission(); //调试的时候要执行一次，以后可注释掉
-        List<String> files=getFilesAllName("2017井");
+        //判断文件夹是否存在，不存在则创建
+
+        File folder = new File(Environment.getExternalStorageDirectory()+File.separator +mapsFolder);
+        if (!folder.exists() && !folder.isDirectory()) {
+            folder.mkdirs();
+            Toast.makeText(getActivity().getApplicationContext(), "请把地图文件放入maps文件夹", Toast.LENGTH_SHORT).show();
+        } else {
+            Log.i(TAG, "onViewCreated: 文件夹已存在");
+        }
+        List<String> files=getFilesAllName(mapsFolder);
         List<Layer> layerList= layers;
         if(files.size()>0) {
             for (int i = 0; i < files.size(); i++) {
@@ -55,7 +72,8 @@ public class GalleryFragment extends Fragment {
         listView.setOnItemClickListener((adapterView, view1, itemIndex, l) -> {
             Object itemObject = adapterView.getAdapter().getItem(itemIndex);
             Layer itemDto= (Layer) itemObject;
-
+            locateLayerIntent.putExtra("locateLayerName", itemDto.getName());
+            LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(locateLayerIntent);
             Toast.makeText(getActivity().getApplicationContext(), "select item text : " + itemDto.getName(), Toast.LENGTH_SHORT).show();
         });
     }

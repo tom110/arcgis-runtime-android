@@ -2,6 +2,7 @@ package com.sdgm.map.ui.gallery;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +11,8 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
 import com.sdgm.map.R;
 
 import java.util.List;
@@ -17,6 +20,8 @@ import java.util.List;
 public class LayerListViewAdapter extends ArrayAdapter<Layer> {
     Context context;
     List<Layer> modelItems;
+    Intent addLayerIntent = new Intent("addLayer");
+    Intent deleteLayerIntent=new Intent("deleteLayer");
     @SuppressWarnings("unchecked")
 
     public LayerListViewAdapter(Context context, List<Layer> resource)
@@ -47,6 +52,14 @@ public class LayerListViewAdapter extends ArrayAdapter<Layer> {
                 CheckBox cb = (CheckBox) v ;
                 Layer layer1 = (Layer) cb.getTag();
                 layer1.setSelected( cb.isChecked() );
+                //发送添加图层广播
+                if(cb.isChecked()) {
+                    addLayerIntent.putExtra("addLayerName", layer1.getName());
+                    LocalBroadcastManager.getInstance(context).sendBroadcast(addLayerIntent);
+                }else{
+                    deleteLayerIntent.putExtra("deleteLayerName", layer1.getName());
+                    LocalBroadcastManager.getInstance(context).sendBroadcast(deleteLayerIntent);
+                }
                 Toast.makeText(context.getApplicationContext(), "checkbox item text : " + layer1.getName(), Toast.LENGTH_SHORT).show();
             });
         }else{
