@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">map</string>
+    <string name="app_name">GISEden</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="nav_header_title">Android Studio</string>
@@ -12,7 +12,7 @@
     <string name="menu_gallery">图层管理</string>
     <string name="menu_slideshow">Slideshow</string>
     <string name="menu_tools">Tools</string>
-    <string name="menu_share">图层1</string>
-    <string name="menu_send">图层2</string>
+    <string name="menu_share">隐藏属性显示</string>
+    <string name="menu_send">面积测量</string>
     <string name="layersManagerTitle">图层管理</string>
 </resources>

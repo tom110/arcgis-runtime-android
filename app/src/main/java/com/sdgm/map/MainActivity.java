@@ -1,5 +1,6 @@
 package com.sdgm.map;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import com.esri.arcgisruntime.mapping.view.LocationDisplay;
@@ -21,6 +22,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 
 import android.util.Log;
@@ -39,8 +41,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private String tag;
 
-    private MapView mMapView;
-    private LocationDisplay mLocationDisplay;
+    Intent hideAttributesIntent=new Intent("hideAttributes");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,30 +76,30 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
-    @Override
-    protected void onPause() {
-
-        if (mMapView != null) {
-            mMapView.pause();
-        }
-        super.onPause();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (mMapView != null) {
-            mMapView.resume();
-        }
-    }
-
-    @Override
-    protected void onDestroy() {
-        if (mMapView != null) {
-            mMapView.dispose();
-        }
-        super.onDestroy();
-    }
+//    @Override
+//    protected void onPause() {
+//
+//        if (mMapView != null) {
+//            mMapView.pause();
+//        }
+//        super.onPause();
+//    }
+//
+//    @Override
+//    protected void onResume() {
+//        super.onResume();
+//        if (mMapView != null) {
+//            mMapView.resume();
+//        }
+//    }
+//
+//    @Override
+//    protected void onDestroy() {
+//        if (mMapView != null) {
+//            mMapView.dispose();
+//        }
+//        super.onDestroy();
+//    }
 
 
     @Override
@@ -140,6 +141,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     break;
                 }
             case R.id.nav_share:
+                hideAttributesIntent.putExtra("hideAttributes", "");
+                LocalBroadcastManager.getInstance(this).sendBroadcast(hideAttributesIntent);
                 Toast.makeText(this, "Share", Toast.LENGTH_SHORT).show();
                 break;
             case R.id.nav_send:

@@ -1,6 +1,7 @@
 package com.sdgm.map.ui.home;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -8,12 +9,13 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -41,6 +43,7 @@ import com.esri.arcgisruntime.layers.WebTiledLayer;
 
 import com.esri.arcgisruntime.mapping.ArcGISMap;
 import com.esri.arcgisruntime.mapping.Basemap;
+import com.esri.arcgisruntime.mapping.view.Callout;
 import com.esri.arcgisruntime.mapping.view.DefaultMapViewOnTouchListener;
 import com.esri.arcgisruntime.mapping.view.LocationDisplay;
 import com.esri.arcgisruntime.mapping.view.MapView;
@@ -53,10 +56,9 @@ import com.sdgm.map.R;
 import com.sdgm.map.TianDiTuMethodsClass;
 
 
-import java.util.Arrays;
+import java.io.File;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import static android.content.ContentValues.TAG;
@@ -67,6 +69,7 @@ public class HomeFragment extends Fragment {
     private MapView mapView;
     private LocationDisplay mLocationDisplay;
     Map<String,FeatureLayer> featureLayers=new HashMap<>();
+    private Callout mCallout;
 
 
 
@@ -136,14 +139,16 @@ public class HomeFragment extends Fragment {
         intentFilter.addAction("addLayer");
         intentFilter.addAction("deleteLayer");
         intentFilter.addAction("locateLayer");
+        intentFilter.addAction("hideAttributes");
         BroadcastReceiver br = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 String addLayerName = intent.getStringExtra("addLayerName");
                 String deleteLayerName=intent.getStringExtra("deleteLayerName");
                 String locateLayerName=intent.getStringExtra("locateLayerName");
+                String hideAttributes=intent.getStringExtra("hideAttributes");
                 if(addLayerName!=null) {
-                    FeatureLayer featureLayer=loadShapefile("/storage/emulated/0/maps/" + addLayerName);
+                    FeatureLayer featureLayer=loadShapefile(ContextCompat.getExternalFilesDirs(getActivity(), null)[0] + File.separator + "maps"+File.separator+ addLayerName);
                     featureLayers.put(addLayerName,featureLayer);
                 }
                 if(deleteLayerName!=null){
@@ -155,11 +160,17 @@ public class HomeFragment extends Fragment {
                         mapView.setViewpointGeometryAsync(featureLayers.get(locateLayerName).getFullExtent());
                     }
                 }
+                if(hideAttributes!=null){
+                    if (mCallout.isShowing()) {
+                        mCallout.dismiss();
+                    }
+                }
             }
         };
         localBroadcastManager.registerReceiver(br, intentFilter);
 
-
+        // get the callout that shows attributes
+        mCallout = mapView.getCallout();
 
     }
 
@@ -215,10 +226,15 @@ public class HomeFragment extends Fragment {
     /**
      * 查询shp方式1:selectFeaturesAsync
      */
+    @SuppressLint("ClickableViewAccessibility")
     private void queryBySelectFeaturesAsync(FeatureLayer mFeatureLayer) {
         mapView.setOnTouchListener(new DefaultMapViewOnTouchListener(getActivity(), mapView) {
             @Override
             public boolean onSingleTapConfirmed(MotionEvent e) {
+
+                if (mCallout.isShowing()) {
+                    mCallout.dismiss();
+                }
 
                 mFeatureLayer.clearSelection();
 
@@ -234,6 +250,14 @@ public class HomeFragment extends Fragment {
                 final ListenableFuture<FeatureQueryResult> future = mFeatureLayer.selectFeaturesAsync(query, FeatureLayer.SelectionMode.NEW);
                 future.addDoneListener(() -> {
                     try {
+                        // create a TextView to display field values
+                        TextView calloutContent = new TextView(getActivity());
+                        calloutContent.setTextColor(Color.BLACK);
+                        calloutContent.setSingleLine(false);
+                        calloutContent.setVerticalScrollBarEnabled(true);
+                        calloutContent.setScrollBarStyle(View.SCROLLBARS_INSIDE_INSET);
+                        calloutContent.setMovementMethod(new ScrollingMovementMethod());
+                        calloutContent.setLines(10);
                         FeatureQueryResult result = future.get();
                         //mFeatureLayer.getFeatureTable().deleteFeaturesAsync(result);
                         Iterator<Feature> iterator = result.iterator();
@@ -245,13 +269,23 @@ public class HomeFragment extends Fragment {
 
                             Map<String, Object> attributes = feature.getAttributes();
                             for (String key : attributes.keySet()) {
-                                Log.e("xyh" + key, String.valueOf(attributes.get(key)));
+                                String k=key;
+                                String v=String.valueOf(attributes.get(key));
+                                Log.e("xyh" + k, v);
+                                if(!v.isEmpty()){
+                                    calloutContent.append(k+" : "+v+"\n");
+                                }
                             }
 
                             //高亮显示选中区域
                             mFeatureLayer.selectFeature(feature);
                             Geometry geometry = feature.getGeometry();
                             mapView.setViewpointGeometryAsync(geometry.getExtent());
+
+                            // show CallOut
+                            mCallout.setLocation(clickPoint);
+                            mCallout.setContent(calloutContent);
+                            mCallout.show();
 
                             //也可以通过添加graphic高亮显示选中区域
                             //

@@ -34,9 +34,11 @@ public class GalleryFragment extends Fragment {
 
     ListView listView;
 
-    String mapsFolder="maps";
+    String mapsFolder = "maps";
 
     Intent locateLayerIntent = new Intent("locateLayer");
+
+    File folder ;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -47,53 +49,58 @@ public class GalleryFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        listView= view.findViewById(R.id.listView);
-        List<Layer> layers=new ArrayList<>();
+        listView = view.findViewById(R.id.listView);
+        List<Layer> layers = new ArrayList<>();
 //        getPermission(); //调试的时候要执行一次，以后可注释掉
         //判断文件夹是否存在，不存在则创建
 
-        File folder = new File(Environment.getExternalStorageDirectory()+File.separator +mapsFolder);
+        folder = new File(ContextCompat.getExternalFilesDirs(getActivity(), null)[0] + File.separator + mapsFolder);
+
         if (!folder.exists() && !folder.isDirectory()) {
             folder.mkdirs();
             Toast.makeText(getActivity().getApplicationContext(), "请把地图文件放入maps文件夹", Toast.LENGTH_SHORT).show();
         } else {
             Log.i(TAG, "onViewCreated: 文件夹已存在");
         }
-        List<String> files=getFilesAllName(mapsFolder);
-        List<Layer> layerList= layers;
-        if(files.size()>0) {
-            for (int i = 0; i < files.size(); i++) {
-                layerList.add(new Layer(files.get(i), files.get(i), false));
+        List<String> files = getFilesAllName();
+        List<Layer> layerList = layers;
+        if(files!=null) {
+            if (files.size() > 0) {
+                for (int i = 0; i < files.size(); i++) {
+                    layerList.add(new Layer(files.get(i), files.get(i), false));
+                }
             }
+        }else{
+            Toast.makeText(getActivity().getApplicationContext(), "获取文件夹文件出错", Toast.LENGTH_SHORT).show();
         }
-        LayerListViewAdapter adapter= new LayerListViewAdapter(getActivity(), layerList);
+        LayerListViewAdapter adapter = new LayerListViewAdapter(getActivity(), layerList);
         listView.setAdapter(adapter);
 
         listView.setOnItemClickListener((adapterView, view1, itemIndex, l) -> {
             Object itemObject = adapterView.getAdapter().getItem(itemIndex);
-            Layer itemDto= (Layer) itemObject;
+            Layer itemDto = (Layer) itemObject;
             locateLayerIntent.putExtra("locateLayerName", itemDto.getName());
             LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(locateLayerIntent);
             Toast.makeText(getActivity().getApplicationContext(), "select item text : " + itemDto.getName(), Toast.LENGTH_SHORT).show();
         });
     }
 
-    public static List<String> getFilesAllName(String folderName) {
-        File sdDir = Environment.getExternalStorageDirectory();
-        File path = new File(sdDir+File.separator +folderName.trim());
+    public List<String> getFilesAllName() {
+
         if (Environment.getExternalStorageState().
-                equals(Environment.MEDIA_MOUNTED)){
-            File[] files=path.listFiles();
-            if (files == null){
-                Log.e("error","空目录");return null;
+                equals(Environment.MEDIA_MOUNTED)) {
+            File[] files = folder.listFiles();
+            if (files == null) {
+                Log.e("error", "空目录");
+                return null;
             }
             List<String> s = new ArrayList<>();
-            for(int i =0;i<files.length;i++){
-                if(files[i].getName().endsWith(".shp"))
+            for (int i = 0; i < files.length; i++) {
+                if (files[i].getName().endsWith(".shp"))
                     s.add(files[i].getName());
             }
             return s;
-        }else{
+        } else {
             return null;
         }
     }
@@ -105,6 +112,21 @@ public class GalleryFragment extends Fragment {
             ActivityCompat.requestPermissions(getActivity(),
                     new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE},
                     124);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String[] permissions,
+                                           int[] grantResults) {
+        if (requestCode == 124) {
+            if ((grantResults.length > 0) && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                Toast.makeText(getActivity().getApplicationContext(), "获取到权限了", Toast.LENGTH_SHORT).show();
+//                mImgDir = new File(folder);//初始化File对象
+//                File[] files = mImgDir.listFiles();//噩梦结束了吗？
+            } else {
+                Toast.makeText(getActivity().getApplicationContext(), "搞不定啊", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 }

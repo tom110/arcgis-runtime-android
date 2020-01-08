@@ -24,16 +24,14 @@ public class LayerListViewAdapter extends ArrayAdapter<Layer> {
     Intent deleteLayerIntent=new Intent("deleteLayer");
     @SuppressWarnings("unchecked")
 
-    public LayerListViewAdapter(Context context, List<Layer> resource)
-    {
+    public LayerListViewAdapter(Context context, List<Layer> resource) {
         super(context, R.layout.content_listview,resource);
         // TODO Auto-generated constructor stub
         this.context = context;
         this.modelItems = resource;
     }
     @Override
-    public View getView(int position, View convertView, ViewGroup parent)
-    {
+    public View getView(int position, View convertView, ViewGroup parent) {
         TextView textView;
         CheckBox checkBox;
 
