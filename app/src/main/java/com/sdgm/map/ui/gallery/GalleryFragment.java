@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.CheckBox;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -55,6 +56,9 @@ public class GalleryFragment extends Fragment {
         //判断文件夹是否存在，不存在则创建
 
         folder = new File(ContextCompat.getExternalFilesDirs(getActivity(), null)[0] + File.separator + mapsFolder);
+
+        TextView text1=view.findViewById(R.id.text1);
+        text1.setText("图层管理\n"+folder.getAbsolutePath());
 
         if (!folder.exists() && !folder.isDirectory()) {
             folder.mkdirs();

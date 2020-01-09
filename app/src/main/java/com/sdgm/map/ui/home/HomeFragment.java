@@ -312,14 +312,27 @@ public class HomeFragment extends Fragment {
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
-        Log.i(TAG, "onDestroy: ondestory");
+    public void onPause() {
+
+        if (mapView != null) {
+            mapView.pause();
+        }
+        super.onPause();
     }
 
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        Log.i(TAG, "onDestroyView: ondestoryview");
+    public void onResume() {
+        super.onResume();
+        if (mapView != null) {
+            mapView.resume();
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        if (mapView != null) {
+            mapView.dispose();
+        }
+        super.onDestroy();
     }
 }

@@ -8,6 +8,7 @@ import com.esri.arcgisruntime.mapping.view.MapView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.core.view.GravityCompat;
@@ -26,8 +27,11 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import static android.content.ContentValues.TAG;
@@ -39,6 +43,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private Fragment mapFragment;
     private Fragment layerManagerFragment;
 
+    private long firstTime = 0;
+
+
     private String tag;
 
     Intent hideAttributesIntent=new Intent("hideAttributes");
@@ -49,6 +56,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
 
 
         drawer = findViewById(R.id.drawer_layout);
@@ -75,31 +83,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             super.onBackPressed();
         }
     }
-
-//    @Override
-//    protected void onPause() {
-//
-//        if (mMapView != null) {
-//            mMapView.pause();
-//        }
-//        super.onPause();
-//    }
-//
-//    @Override
-//    protected void onResume() {
-//        super.onResume();
-//        if (mMapView != null) {
-//            mMapView.resume();
-//        }
-//    }
-//
-//    @Override
-//    protected void onDestroy() {
-//        if (mMapView != null) {
-//            mMapView.dispose();
-//        }
-//        super.onDestroy();
-//    }
 
 
     @Override
@@ -152,5 +135,23 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        long secondTime = System.currentTimeMillis();
+
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            if (secondTime - firstTime < 2000) {
+                System.exit(0);
+            } else {
+                Toast.makeText(getApplicationContext(), "再按一次返回键退出", Toast.LENGTH_SHORT).show();
+                firstTime = System.currentTimeMillis();
+            }
+
+            return true;
+        }
+
+        return super.onKeyDown(keyCode, event);
     }
 }
