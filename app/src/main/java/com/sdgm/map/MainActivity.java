@@ -49,6 +49,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private String tag;
 
     Intent hideAttributesIntent=new Intent("hideAttributes");
+    Intent measureArea=new Intent("measureArea");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -126,10 +127,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             case R.id.nav_share:
                 hideAttributesIntent.putExtra("hideAttributes", "");
                 LocalBroadcastManager.getInstance(this).sendBroadcast(hideAttributesIntent);
-                Toast.makeText(this, "Share", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(this, "Share", Toast.LENGTH_SHORT).show();
                 break;
             case R.id.nav_send:
-                Toast.makeText(this, "Send", Toast.LENGTH_SHORT).show();
+                measureArea.putExtra("measureArea", "");
+                LocalBroadcastManager.getInstance(this).sendBroadcast(measureArea);
+//                Toast.makeText(this, "Send", Toast.LENGTH_SHORT).show();
                 break;
         }
 

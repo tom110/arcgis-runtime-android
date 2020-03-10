@@ -32,10 +32,14 @@ import com.esri.arcgisruntime.data.FeatureQueryResult;
 import com.esri.arcgisruntime.data.FeatureTable;
 import com.esri.arcgisruntime.data.QueryParameters;
 import com.esri.arcgisruntime.data.ShapefileFeatureTable;
+import com.esri.arcgisruntime.geometry.AreaUnit;
 import com.esri.arcgisruntime.geometry.Envelope;
 import com.esri.arcgisruntime.geometry.Geometry;
+import com.esri.arcgisruntime.geometry.GeometryEngine;
 import com.esri.arcgisruntime.geometry.GeometryType;
+import com.esri.arcgisruntime.geometry.LinearUnit;
 import com.esri.arcgisruntime.geometry.Point;
+import com.esri.arcgisruntime.geometry.Polygon;
 import com.esri.arcgisruntime.geometry.SpatialReference;
 import com.esri.arcgisruntime.io.RequestConfiguration;
 import com.esri.arcgisruntime.layers.FeatureLayer;
@@ -45,8 +49,13 @@ import com.esri.arcgisruntime.mapping.ArcGISMap;
 import com.esri.arcgisruntime.mapping.Basemap;
 import com.esri.arcgisruntime.mapping.view.Callout;
 import com.esri.arcgisruntime.mapping.view.DefaultMapViewOnTouchListener;
+import com.esri.arcgisruntime.mapping.view.GraphicsOverlay;
 import com.esri.arcgisruntime.mapping.view.LocationDisplay;
 import com.esri.arcgisruntime.mapping.view.MapView;
+import com.esri.arcgisruntime.mapping.view.SketchCreationMode;
+import com.esri.arcgisruntime.mapping.view.SketchEditor;
+import com.esri.arcgisruntime.mapping.view.SketchGeometryChangedEvent;
+import com.esri.arcgisruntime.mapping.view.SketchGeometryChangedListener;
 import com.esri.arcgisruntime.symbology.SimpleFillSymbol;
 import com.esri.arcgisruntime.symbology.SimpleLineSymbol;
 import com.esri.arcgisruntime.symbology.SimpleMarkerSymbol;
@@ -57,20 +66,23 @@ import com.sdgm.map.TianDiTuMethodsClass;
 
 
 import java.io.File;
+import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
 import static android.content.ContentValues.TAG;
+import static com.esri.arcgisruntime.mapping.view.SketchCreationMode.POLYGON;
 
 public class HomeFragment extends Fragment {
 
 
     private MapView mapView;
     private LocationDisplay mLocationDisplay;
-    Map<String,FeatureLayer> featureLayers=new HashMap<>();
+    Map<String, FeatureLayer> featureLayers = new HashMap<>();
     private Callout mCallout;
-
+    private SketchEditor mSketchEditor = new SketchEditor();
+    SketchGeometryChangedListener sketchGeometryChangedListener;
 
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -84,7 +96,7 @@ public class HomeFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         FloatingActionButton fab = getActivity().findViewById(R.id.fab);
         super.onViewCreated(view, savedInstanceState);
-        mapView =  getView().findViewById(R.id.mapView);
+        mapView = getView().findViewById(R.id.mapView);
         ArcGISMap map = new ArcGISMap();
         mapView.setMap(map);
 
@@ -119,7 +131,7 @@ public class HomeFragment extends Fragment {
             } else {
 //                String message = String.format("Error in DataSourceStatusChangedListener: %s",
 //                        dataSourceStatusChangedEvent.getSource().getLocationDataSource().getError().getMessage());
-                String message="请打开手机GPS定位功能！";
+                String message = "请打开手机GPS定位功能！";
                 Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show();
             }
         });
@@ -140,30 +152,78 @@ public class HomeFragment extends Fragment {
         intentFilter.addAction("deleteLayer");
         intentFilter.addAction("locateLayer");
         intentFilter.addAction("hideAttributes");
+        intentFilter.addAction("measureArea");
         BroadcastReceiver br = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 String addLayerName = intent.getStringExtra("addLayerName");
-                String deleteLayerName=intent.getStringExtra("deleteLayerName");
-                String locateLayerName=intent.getStringExtra("locateLayerName");
-                String hideAttributes=intent.getStringExtra("hideAttributes");
-                if(addLayerName!=null) {
-                    FeatureLayer featureLayer=loadShapefile(ContextCompat.getExternalFilesDirs(getActivity(), null)[0] + File.separator + "maps"+File.separator+ addLayerName);
-                    featureLayers.put(addLayerName,featureLayer);
+                String deleteLayerName = intent.getStringExtra("deleteLayerName");
+                String locateLayerName = intent.getStringExtra("locateLayerName");
+                String hideAttributes = intent.getStringExtra("hideAttributes");
+                String measureArea = intent.getStringExtra("measureArea");
+                if (addLayerName != null) {
+                    FeatureLayer featureLayer = loadShapefile(ContextCompat.getExternalFilesDirs(getActivity(), null)[0] + File.separator + "maps" + File.separator + addLayerName);
+                    featureLayers.put(addLayerName, featureLayer);
                 }
-                if(deleteLayerName!=null){
+                if (deleteLayerName != null) {
                     mapView.getMap().getOperationalLayers().remove(featureLayers.get(deleteLayerName));
                     featureLayers.remove(deleteLayerName);
                 }
-                if(locateLayerName!=null){
-                    if(featureLayers.keySet().contains(locateLayerName)){
+                if (locateLayerName != null) {
+                    if (featureLayers.keySet().contains(locateLayerName)) {
                         mapView.setViewpointGeometryAsync(featureLayers.get(locateLayerName).getFullExtent());
                     }
                 }
-                if(hideAttributes!=null){
+                if (hideAttributes != null) {
                     if (mCallout.isShowing()) {
                         mCallout.dismiss();
                     }
+                }
+                if (measureArea != null) {
+                    if(sketchGeometryChangedListener!=null){
+                        mSketchEditor.removeGeometryChangedListener(sketchGeometryChangedListener);
+                    }
+                    // add a graphic of point, multipoint, polyline and polygon.
+
+                    mapView.setSketchEditor(mSketchEditor);
+
+                    sketchGeometryChangedListener= sketchGeometryChangedEvent -> {
+                        switch (mSketchEditor.getSketchCreationMode()) {
+                            case POLYLINE:
+                                //在此进行polyline的计算
+                                break;
+                            case POLYGON:
+                                Geometry polygonGeometry = mSketchEditor.getGeometry();
+                                if (polygonGeometry != null) {
+                                    Polygon polygon = (Polygon) GeometryEngine.project(polygonGeometry, SpatialReference.create(3857));
+                                    if (mCallout.isShowing()) {
+                                        mCallout.dismiss();
+                                    }
+
+                                    double areaValue = GeometryEngine.area(polygon);
+                                    if (areaValue != 0.0) {
+                                        TextView calloutContent = new TextView(getActivity());
+                                        calloutContent.setTextColor(Color.BLACK);
+                                        calloutContent.setSingleLine(false);
+                                        calloutContent.setVerticalScrollBarEnabled(true);
+                                        calloutContent.setScrollBarStyle(View.SCROLLBARS_INSIDE_INSET);
+                                        calloutContent.setMovementMethod(new ScrollingMovementMethod());
+                                        calloutContent.setLines(1);
+                                        calloutContent.append("面积" + " : " + formatDouble(Math.abs(areaValue)/10000) + "公顷" + "\n");
+                                        mCallout.setLocation(polygon.getExtent().getCenter());
+                                        mCallout.setContent(calloutContent);
+                                        mCallout.show();
+                                    }
+                                }
+                                break;
+                            default:
+                                break;
+                        }
+                    };
+
+                    mSketchEditor.addGeometryChangedListener(sketchGeometryChangedListener);
+                    mSketchEditor.start(POLYGON);
+
                 }
             }
         };
@@ -174,6 +234,10 @@ public class HomeFragment extends Fragment {
 
     }
 
+    private String formatDouble(double s) {
+        DecimalFormat fmt = new DecimalFormat("##0.0");
+        return fmt.format(s);
+    }
 
     private void setupLocationDisplay() {
         mLocationDisplay = mapView.getLocationDisplay();
@@ -197,21 +261,21 @@ public class HomeFragment extends Fragment {
         // 构建featureLayerr
         FeatureLayer mFeatureLayer = new FeatureLayer(shapefileFeatureTable);
         // 设置Shapefile文件的渲染方式
-        FeatureTable table=mFeatureLayer.getFeatureTable();
-        if(table.getGeometryType()== GeometryType.MULTIPOINT || table.getGeometryType()== GeometryType.POINT){
-            SimpleMarkerSymbol markerSymbol=new SimpleMarkerSymbol(SimpleMarkerSymbol.Style.DIAMOND,Color.RED,10.0f);
+        FeatureTable table = mFeatureLayer.getFeatureTable();
+        if (table.getGeometryType() == GeometryType.MULTIPOINT || table.getGeometryType() == GeometryType.POINT) {
+            SimpleMarkerSymbol markerSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbol.Style.DIAMOND, Color.RED, 10.0f);
             mFeatureLayer.setRenderer(new SimpleRenderer(markerSymbol));
-        }else if(table.getGeometryType()== GeometryType.POLYGON ){
+        } else if (table.getGeometryType() == GeometryType.POLYGON) {
             SimpleLineSymbol lineSymbol = new SimpleLineSymbol(SimpleLineSymbol.Style.SOLID, Color.RED, 1.0f);
             SimpleFillSymbol fillSymbol = new SimpleFillSymbol(SimpleFillSymbol.Style.SOLID, Color.YELLOW, lineSymbol);
             SimpleRenderer renderer = new SimpleRenderer(fillSymbol);
             mFeatureLayer.setRenderer(renderer);
             mFeatureLayer.setOpacity(0.5f);
-        }else if(table.getGeometryType()== GeometryType.POLYLINE ){
+        } else if (table.getGeometryType() == GeometryType.POLYLINE) {
             SimpleLineSymbol lineSymbol = new SimpleLineSymbol(SimpleLineSymbol.Style.SOLID, Color.RED, 1.0f);
             SimpleRenderer renderer = new SimpleRenderer(lineSymbol);
             mFeatureLayer.setRenderer(renderer);
-        }else{
+        } else {
 
         }
 
@@ -269,11 +333,11 @@ public class HomeFragment extends Fragment {
 
                             Map<String, Object> attributes = feature.getAttributes();
                             for (String key : attributes.keySet()) {
-                                String k=key;
-                                String v=String.valueOf(attributes.get(key));
+                                String k = key;
+                                String v = String.valueOf(attributes.get(key));
                                 Log.e("xyh" + k, v);
-                                if(!v.isEmpty()){
-                                    calloutContent.append(k+" : "+v+"\n");
+                                if (!v.isEmpty()) {
+                                    calloutContent.append(k + " : " + v + "\n");
                                 }
                             }
 
