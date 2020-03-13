@@ -71,7 +71,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import static android.content.ContentValues.TAG;
 import static com.esri.arcgisruntime.mapping.view.SketchCreationMode.POLYGON;
 
 public class HomeFragment extends Fragment {
@@ -83,6 +82,8 @@ public class HomeFragment extends Fragment {
     private Callout mCallout;
     private SketchEditor mSketchEditor = new SketchEditor();
     SketchGeometryChangedListener sketchGeometryChangedListener;
+    private static final HashMap<String, String> attrMap = new HashMap<String, String>();
+
 
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -90,6 +91,83 @@ public class HomeFragment extends Fragment {
         View root = inflater.inflate(R.layout.fragment_home, container, false);
 
         return root;
+    }
+
+    private void initAtrrMap(){
+        attrMap.put("MIAN_JI","面积");
+        attrMap.put("DI_LEI","地类");
+        attrMap.put("GLLX","土地管理类型");
+        attrMap.put("SHENG","省（区、市）");
+        attrMap.put("XIAN","县（市、旗）");
+        attrMap.put("XIANG","乡");
+        attrMap.put("CUN","村");
+        attrMap.put("LIN_YE_JU","林业局（场）");
+        attrMap.put("LIN_CHANG","林场（分场）");
+        attrMap.put("LIN_BAN","林班");
+        attrMap.put("XIAO_BAN","图斑（小班）");
+        attrMap.put("DI_MAO","地貌");
+        attrMap.put("PO_XIANG","坡向");
+        attrMap.put("PO_WEI","坡位");
+        attrMap.put("PO_DU","坡度");
+        attrMap.put("KE_JI_DU","交通区位");
+        attrMap.put("TU_RANG_LX","土壤类型（名称）");
+        attrMap.put("TU_CENG_HD","土层厚度");
+        attrMap.put("LD_QS","土地权属");
+        attrMap.put("LIN_ZHONG","林种");
+        attrMap.put("QI_YUAN","起源");
+        attrMap.put("SEN_LIN_LB","森林类别");
+        attrMap.put("SHI_QUAN_D","事权等级");
+        attrMap.put("GJGYL_BHDJ","国家级公益林保护等级");
+        attrMap.put("G_CHENG_LB","工程类别");
+        attrMap.put("LING_ZU","龄组");
+        attrMap.put("YU_BI_DU","郁闭度/覆盖度");
+        attrMap.put("YOU_SHI_SZ","优势树种");
+        attrMap.put("PINGJUN_XJ","平均胸径");
+        attrMap.put("HUO_LMGQXJ","公顷蓄积（活立木）");
+        attrMap.put("MEI_GQ_ZS","每公顷株数");
+        attrMap.put("TD_TH_LX","土地退化类型");
+        attrMap.put("DISPE","灾害类型");
+        attrMap.put("DISASTER_C","灾害等级");
+        attrMap.put("ZL_DJ","林地质量等级");
+        attrMap.put("LD_KD","林带宽度");
+        attrMap.put("LD_CD","林带长度");
+        attrMap.put("BCLD","是否为补充林地");
+        attrMap.put("BH_DJ","林地保护等级");
+        attrMap.put("LYFQ","林地功能分区");
+        attrMap.put("QYKZ","主体功能区");
+        attrMap.put("BHYY","林地变化原因");
+        attrMap.put("BHND","变化年度");
+        attrMap.put("Remarks","说明");
+        attrMap.put("XJ_JYDW","县级经营单位");
+        attrMap.put("STQW","生态区位");
+        attrMap.put("GYLGHFS","公益林管护方式");
+        attrMap.put("SF_BC","是否纳入补偿");
+        attrMap.put("LD_S_YOU_Q","林地所有权");
+        attrMap.put("LM_S_YOU_Q","林木所有权");
+        attrMap.put("LM_S_YONG_Q","林木使用权");
+        attrMap.put("FZZ_HD","腐殖质厚度");
+        attrMap.put("TU_RANG_ZD","土壤质地");
+        attrMap.put("YZH_CD","盐渍化程度");
+        attrMap.put("DXSMS","地下水埋深");
+        attrMap.put("LX_GMMC","林下灌木名称");
+        attrMap.put("LX_GMGD","林下灌木盖度");
+        attrMap.put("CB_MC","草本名称");
+        attrMap.put("CB_GD","草本盖度");
+        attrMap.put("ZB_FB","植被分布");
+        attrMap.put("LFSZZK","林分生长状况");
+        attrMap.put("QUN_LUO_JG","群落结构");
+        attrMap.put("SZ_ZC","树种组成");
+        attrMap.put("SZJG","树种结构");
+        attrMap.put("ZLND","造林年度");
+        attrMap.put("PJ_NL","平均年龄");
+        attrMap.put("PJ_SG","平均树高");
+        attrMap.put("XB_XJ","小班蓄积");
+        attrMap.put("JJLCL","经济林（竹林）年产量");
+        attrMap.put("SF_LB","是否林保范围");
+        attrMap.put("SS_SZ","散生树种");
+        attrMap.put("SS_ZS","散生株数");
+        attrMap.put("SZ_XJ","散生蓄积");
+        attrMap.put("BH_YJ","变化依据");
     }
 
     @Override
@@ -100,6 +178,12 @@ public class HomeFragment extends Fragment {
         ArcGISMap map = new ArcGISMap();
         mapView.setMap(map);
 
+//        LayoutInflater inflater = (LayoutInflater)getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+//        LinearLayout groupPollingAddress = (LinearLayout)inflater.inflate(R.layout.nav_header_main, null);
+
+//        TextView userTextView= groupPollingAddress.findViewById(R.id.app_user);
+//        String user = getActivity().getIntent().getStringExtra("user");
+//        userTextView.setText(user);
 
         WebTiledLayer webTiledLayer = TianDiTuMethodsClass.CreateTianDiTuTiledLayer(TianDiTuMethodsClass.LayerType.TIANDITU_IMAGE_2000);
         WebTiledLayer webTiledLayer1 = TianDiTuMethodsClass.CreateTianDiTuTiledLayer(TianDiTuMethodsClass.LayerType.TIANDITU_IMAGE_ANNOTATION_CHINESE_2000);
@@ -135,6 +219,8 @@ public class HomeFragment extends Fragment {
                 Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show();
             }
         });
+
+        initAtrrMap();
 
         setupLocationDisplay();
 
@@ -180,14 +266,14 @@ public class HomeFragment extends Fragment {
                     }
                 }
                 if (measureArea != null) {
-                    if(sketchGeometryChangedListener!=null){
+                    if (sketchGeometryChangedListener != null) {
                         mSketchEditor.removeGeometryChangedListener(sketchGeometryChangedListener);
                     }
                     // add a graphic of point, multipoint, polyline and polygon.
 
                     mapView.setSketchEditor(mSketchEditor);
 
-                    sketchGeometryChangedListener= sketchGeometryChangedEvent -> {
+                    sketchGeometryChangedListener = sketchGeometryChangedEvent -> {
                         switch (mSketchEditor.getSketchCreationMode()) {
                             case POLYLINE:
                                 //在此进行polyline的计算
@@ -209,7 +295,7 @@ public class HomeFragment extends Fragment {
                                         calloutContent.setScrollBarStyle(View.SCROLLBARS_INSIDE_INSET);
                                         calloutContent.setMovementMethod(new ScrollingMovementMethod());
                                         calloutContent.setLines(1);
-                                        calloutContent.append("面积" + " : " + formatDouble(Math.abs(areaValue)/10000) + "公顷" + "\n");
+                                        calloutContent.append("面积" + " : " + formatDouble(Math.abs(areaValue) / 10000) + "公顷" + "\n");
                                         mCallout.setLocation(polygon.getExtent().getCenter());
                                         mCallout.setContent(calloutContent);
                                         mCallout.show();
@@ -235,7 +321,7 @@ public class HomeFragment extends Fragment {
     }
 
     private String formatDouble(double s) {
-        DecimalFormat fmt = new DecimalFormat("##0.0");
+        DecimalFormat fmt = new DecimalFormat("##0.000");
         return fmt.format(s);
     }
 
@@ -321,7 +407,7 @@ public class HomeFragment extends Fragment {
                         calloutContent.setVerticalScrollBarEnabled(true);
                         calloutContent.setScrollBarStyle(View.SCROLLBARS_INSIDE_INSET);
                         calloutContent.setMovementMethod(new ScrollingMovementMethod());
-                        calloutContent.setLines(10);
+
                         FeatureQueryResult result = future.get();
                         //mFeatureLayer.getFeatureTable().deleteFeaturesAsync(result);
                         Iterator<Feature> iterator = result.iterator();
@@ -330,16 +416,23 @@ public class HomeFragment extends Fragment {
                         while (iterator.hasNext()) {
                             counter++;
                             Feature feature = iterator.next();
-
+                            Map<String, String> attrs = new HashMap<String, String>();
                             Map<String, Object> attributes = feature.getAttributes();
                             for (String key : attributes.keySet()) {
-                                String k = key;
+                                String k = attrMap.get(key);
                                 String v = String.valueOf(attributes.get(key));
                                 Log.e("xyh" + k, v);
-                                if (!v.isEmpty()) {
-                                    calloutContent.append(k + " : " + v + "\n");
+                                if (!v.isEmpty() && k!=null) {
+                                    attrs.put(k, v);
                                 }
                             }
+                            calloutContent.setLines(attrs.size());
+                            for (String key : attrs.keySet()) {
+                                String key1 = key;
+                                String v1 = attrs.get(key);
+                                calloutContent.append(key1 + " : " + v1 + "\n");
+                            }
+
 
                             //高亮显示选中区域
                             mFeatureLayer.selectFeature(feature);

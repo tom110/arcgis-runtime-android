@@ -2,14 +2,13 @@ package com.sdgm.map;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.preference.PreferenceManager;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -22,13 +21,14 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 public class LoginActivity extends Activity {
-
+    SharedPreferences sharedpreferences;
     private EditText user;
     private EditText password;
     private Button login;
     private Button register;
     private SharedPreferences pref;
     private CheckBox rembemberPass;
+    public static final String mypreference = "mypref";
     public static final String TAG = "LoginActivity";
     private static final String URLLOGIN = "xxx/login/json/data";
 
@@ -39,19 +39,23 @@ public class LoginActivity extends Activity {
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);//去掉标题栏
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);//去掉信息栏
         setContentView(R.layout.login);
-        pref = PreferenceManager.getDefaultSharedPreferences(this);
+        pref = getSharedPreferences(mypreference, Context.MODE_PRIVATE);
 
         //绑定控件
         init();
 
         //记住密码
-        boolean isRemember = pref.getBoolean("remember_password", false);
+        boolean isRemember = pref.getBoolean("remember_password",false);
         if (isRemember) {
             String user1 = pref.getString("user", "");
             String password1 = pref.getString("password", "");
             user.setText(user1);
             password.setText(password1);
             rembemberPass.setChecked(true);
+        }else{
+            user.setText("");
+            password.setText("");
+            rembemberPass.setChecked(false);
         }
 
         login.setOnClickListener(new View.OnClickListener() {
@@ -60,9 +64,12 @@ public class LoginActivity extends Activity {
             //登录按键的响应
             public void onClick(View v) {
 
+
                 String[] data = null;
                 String inputUser = user.getText().toString();
                 String inputPassword = password.getText().toString();
+
+
 
                 if (TextUtils.isEmpty(inputUser)) {
                     Toast.makeText(LoginActivity.this, "请输入用户名", Toast.LENGTH_SHORT).show();
@@ -87,8 +94,16 @@ public class LoginActivity extends Activity {
                                     startActivity(new Intent(LoginActivity.this, MainActivity.class));
                                     break;
                                 case 3:
-                                    Toast.makeText(LoginActivity.this, "url为空", Toast.LENGTH_SHORT).show();
-                                    startActivity(new Intent(LoginActivity.this, MainActivity.class));
+//                                    Toast.makeText(LoginActivity.this, "url为空", Toast.LENGTH_SHORT).show();
+                                    SharedPreferences.Editor editor = pref.edit();
+                                    editor.putString("user",inputUser);
+                                    editor.putString("password",inputPassword);
+                                    editor.putBoolean("remember_password",rembemberPass.isChecked());
+                                    editor.commit();
+                                    Intent i = new Intent(LoginActivity.this, MainActivity.class);
+                                    i.putExtra("user", inputUser);
+                                    i.putExtra("password", inputPassword);
+                                    startActivity(i);
                                     LoginActivity.this.finish();
                                     break;
                                 case 4:
@@ -118,14 +133,14 @@ public class LoginActivity extends Activity {
         /**
          * 跳转到注册页面
          */
-        register.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
-                startActivity(intent);
-
-            }
-        });
+//        register.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
+//                startActivity(intent);
+//
+//            }
+//        });
 
     }
     /**
@@ -133,7 +148,7 @@ public class LoginActivity extends Activity {
      */
     private void init () {
         login = findViewById(R.id.login);
-        register = findViewById(R.id.register);
+//        register = findViewById(R.id.register);
         user = findViewById(R.id.user);
         password = findViewById(R.id.password);
         rembemberPass = findViewById(R.id.remember);

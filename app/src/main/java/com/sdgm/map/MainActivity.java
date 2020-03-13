@@ -1,5 +1,6 @@
 package com.sdgm.map;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -10,6 +11,7 @@ import com.google.android.material.snackbar.Snackbar;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.core.view.GravityCompat;
 
@@ -26,12 +28,16 @@ import androidx.fragment.app.Fragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 
+import android.os.PersistableBundle;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import static android.content.ContentValues.TAG;
@@ -58,12 +64,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-
-
         drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-
 
         ActionBarDrawerToggle toggle=new ActionBarDrawerToggle(this,drawer,toolbar,R.string.navigation_drawer_open,R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
@@ -71,10 +74,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         mapFragment= getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
 
-
         tag="map";
 
+
     }
+
 
     @Override
     public void onBackPressed() {
@@ -157,4 +161,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         return super.onKeyDown(keyCode, event);
     }
+
+
 }
